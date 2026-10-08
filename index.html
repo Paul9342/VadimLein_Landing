@@ -374,16 +374,17 @@
         <h2 data-i18n="form.title"></h2>
         <p class="lead" data-i18n="form.text"></p>
       </div>
-      <!-- Заявки уходят через Web3Forms; почта получателя привязана к access_key -->
+      <!-- Заявки уходят через Web3Forms; почта получателя привязана к access_key.
+           Имена полей — только латиницей: кириллицу в названиях Web3Forms превращает в «иероглифы» -->
       <form id="orderForm" action="https://api.web3forms.com/submit" method="POST" novalidate>
         <input type="hidden" name="access_key" value="057a7d2a-e4b9-46f8-b6d6-bff450a49fda">
         <input type="hidden" name="subject" value="Новая заявка с сайта Vadim Lein">
         <input type="hidden" name="from_name" value="Сайт Vadim Lein Art Studio">
-        <input type="hidden" name="Язык" id="formLang" value="RU">
+        <input type="hidden" name="Language" id="formLang" value="RU">
         <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
         <!-- Все поля обязательные; проверка и подсказки — в скрипте (validateField) -->
         <label><span data-i18n="form.name"></span>
-          <input type="text" name="Имя" id="fName" required autocomplete="name" aria-describedby="eName">
+          <input type="text" name="Name" id="fName" required autocomplete="name" aria-describedby="eName">
           <span class="err" id="eName" aria-live="polite"></span>
         </label>
         <label><span data-i18n="form.email"></span>
@@ -391,11 +392,11 @@
           <span class="err" id="eEmail" aria-live="polite"></span>
         </label>
         <label><span data-i18n="form.phone"></span>
-          <input type="tel" name="Телефон" id="fPhone" required autocomplete="tel" inputmode="tel" aria-describedby="ePhone">
+          <input type="tel" name="Phone" id="fPhone" required autocomplete="tel" inputmode="tel" aria-describedby="ePhone">
           <span class="err" id="ePhone" aria-live="polite"></span>
         </label>
         <label><span data-i18n="form.painting"></span>
-          <select name="Картина" id="paintingSelect" required aria-describedby="ePainting"></select>
+          <select name="Painting" id="paintingSelect" required aria-describedby="ePainting"></select>
           <span class="err" id="ePainting" aria-live="polite"></span>
         </label>
         <button class="btn" type="submit" id="formSubmit" data-i18n="form.submit"></button>
