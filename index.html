@@ -169,6 +169,12 @@
   input:focus, select:focus { outline: none; border-color: var(--accent); }
   .hp { position: absolute; left: -9999px; }
   .form-note { font-size: var(--fs-s); color: var(--muted); margin: 0; }
+  #formError { margin: 0; }
+  .btn:disabled { opacity: .6; cursor: default; }
+  .form-done { background: var(--surface); border: 1px solid var(--line); padding: 40px; align-self: start; outline: none; }
+  .form-done h3 { font-size: var(--fs-l); margin-bottom: 12px; }
+  .form-done p { margin: 0; color: var(--muted); }
+  .form-done[hidden], form[hidden] { display: none; }
 
   /* 9. Review */
   .review { text-align: center; padding: 72px 0; }
@@ -368,12 +374,13 @@
         <h2 data-i18n="form.title"></h2>
         <p class="lead" data-i18n="form.text"></p>
       </div>
-      <!-- TODO: после активации FormSubmit заменить почту в action на случайный код -->
-      <form id="orderForm" action="https://formsubmit.co/9034525@gmail.com" method="POST" novalidate>
-        <input type="hidden" name="_subject" value="Новая заявка с сайта Vadim Lein">
-        <input type="hidden" name="_template" value="table">
+      <!-- Заявки уходят через Web3Forms; почта получателя привязана к access_key -->
+      <form id="orderForm" action="https://api.web3forms.com/submit" method="POST" novalidate>
+        <input type="hidden" name="access_key" value="057a7d2a-e4b9-46f8-b6d6-bff450a49fda">
+        <input type="hidden" name="subject" value="Новая заявка с сайта Vadim Lein">
+        <input type="hidden" name="from_name" value="Сайт Vadim Lein Art Studio">
         <input type="hidden" name="Язык" id="formLang" value="RU">
-        <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
         <!-- Все поля обязательные; проверка и подсказки — в скрипте (validateField) -->
         <label><span data-i18n="form.name"></span>
           <input type="text" name="Имя" id="fName" required autocomplete="name" aria-describedby="eName">
@@ -391,9 +398,15 @@
           <select name="Картина" id="paintingSelect" required aria-describedby="ePainting"></select>
           <span class="err" id="ePainting" aria-live="polite"></span>
         </label>
-        <button class="btn" type="submit" data-i18n="form.submit"></button>
+        <button class="btn" type="submit" id="formSubmit" data-i18n="form.submit"></button>
+        <p class="err" id="formError" role="alert" data-i18n="form.error"></p>
         <p class="form-note" data-i18n="form.note"></p>
       </form>
+      <!-- Показывается вместо формы после успешной отправки -->
+      <div class="form-done" id="formDone" role="status" tabindex="-1" hidden>
+        <h3 data-i18n="form.doneTitle"></h3>
+        <p data-i18n="form.doneText"></p>
+      </div>
     </div>
   </section>
 
@@ -516,6 +529,10 @@ const T = {
     "err.painting": "Выберите картину из списка",
     "form.submit": "Отправить заявку",
     "form.note": "Без предоплаты: сначала обсудим детали.",
+    "form.sending": "Отправляем…",
+    "form.error": "Не получилось отправить заявку. Попробуйте ещё раз или напишите Вадиму в WhatsApp.",
+    "form.doneTitle": "Спасибо!",
+    "form.doneText": "Заявка отправлена. Вадим скоро напишет вам.",
     "review.title": "Уже купили картину?",
     "review.text": "Буду благодарен, если поделитесь впечатлением.",
     "review.btn": "Оставить отзыв в WhatsApp",
@@ -572,6 +589,10 @@ const T = {
     "err.painting": "Elegí un cuadro de la lista",
     "form.submit": "Enviar solicitud",
     "form.note": "Sin pago por adelantado: primero conversamos los detalles.",
+    "form.sending": "Enviando…",
+    "form.error": "No se pudo enviar la solicitud. Probá de nuevo o escribile a Vadim por WhatsApp.",
+    "form.doneTitle": "¡Gracias!",
+    "form.doneText": "Tu solicitud fue enviada. Vadim te va a escribir pronto.",
     "review.title": "¿Ya tenés un cuadro?",
     "review.text": "Te agradezco si compartís tu impresión.",
     "review.btn": "Dejar reseña en WhatsApp",
@@ -628,6 +649,10 @@ const T = {
     "err.painting": "Please choose a painting from the list",
     "form.submit": "Send request",
     "form.note": "No prepayment: we'll discuss the details first.",
+    "form.sending": "Sending…",
+    "form.error": "We couldn't send your request. Please try again or message Vadim on WhatsApp.",
+    "form.doneTitle": "Thank you!",
+    "form.doneText": "Your request has been sent. Vadim will write to you soon.",
     "review.title": "Already bought a painting?",
     "review.text": "I'd be grateful if you shared your impressions.",
     "review.btn": "Leave a review on WhatsApp",
@@ -720,12 +745,37 @@ function validateField(el) {
 }
 
 const form = $("#orderForm");
-form.addEventListener("submit", e => {
+/* Отправка в фоне: посетитель остаётся на странице и видит «Спасибо».
+   Без JS форма уйдёт обычным POST на Web3Forms. */
+form.addEventListener("submit", async e => {
+  e.preventDefault();
   const fields = Object.keys(CHECKS).map(id => $("#" + id));
   const bad = fields.filter(el => !validateField(el));
-  if (bad.length) {
-    e.preventDefault();
-    bad[0].focus();
+  if (bad.length) { bad[0].focus(); return; }
+
+  const btn = $("#formSubmit");
+  const error = $("#formError");
+  error.classList.remove("show");
+  btn.disabled = true;
+  btn.textContent = T[lang]["form.sending"];
+  try {
+    const res = await fetch(form.action, {
+      method: "POST",
+      headers: { Accept: "application/json" },
+      body: new FormData(form)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) throw new Error(data.message || res.status);
+    form.reset();
+    form.hidden = true;
+    const done = $("#formDone");
+    done.hidden = false;
+    done.focus();
+  } catch (err) {
+    error.classList.add("show");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = T[lang]["form.submit"];
   }
 });
 /* Подсказка исчезает, как только поле исправлено */
