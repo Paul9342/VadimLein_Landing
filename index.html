@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vadim Lein Art Studio — рельефная живопись, Монтевидео</title>
+<meta name="description" content="Авторские рельефные абстрактные картины для интерьера. Оригиналы в одном экземпляре, доставка по Уругваю.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Forum&display=swap&subset=cyrillic" rel="stylesheet">
+<style>
+  :root {
+    --bg-from: #bcc2cb;
+    --bg-to: #ffffff;
+    --surface: rgba(255,255,255,.72);
+    --line: #dcdde1;
+    --text: #2b2d31;
+    --muted: #6b6e75;
+    --accent: #1e3a6b;
+    --accent-hover: #162c52;
+    --ph: #ecedf0;
+    --serif: "Forum", Georgia, serif;
+    --sans: "Forum", Georgia, serif;
+    --wrap: 1160px;
+    /* Три размера текста на всю страницу (кроме шапки с именем) */
+    --fs-l: clamp(34px, 4.6vw, 54px);
+    --fs-m: 20px;
+    --fs-s: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font: 400 var(--fs-m)/1.6 var(--sans);
+    color: var(--text);
+    background: var(--bg-to);
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Фон: серо-белый градиент с шёлковыми лентами. Слой закреплён, чтобы работать и на iOS */
+  .bg {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 55% at 45% 100%, rgba(255,255,255,.85) 0%, rgba(255,255,255,0) 100%),
+      linear-gradient(165deg, var(--bg-from) 0%, #d7dbe1 30%, #eaecef 60%, #f6f7f8 85%);
+  }
+  .bg svg { width: 100%; height: 100%; display: block; }
+  img { display: block; max-width: 100%; }
+  a { color: var(--accent); }
+  h1, h2, h3, .serif { font-family: var(--serif); font-weight: 400; letter-spacing: .01em; }
+  h1 { font-size: var(--fs-l); line-height: 1.1; margin: 0 0 24px; }
+  h2 { font-size: var(--fs-l); line-height: 1.15; margin: 0 0 16px; }
+  h3 { font-size: var(--fs-m); line-height: 1.2; margin: 0 0 8px; }
+  p { margin: 0 0 16px; }
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
+  section { padding: 96px 0; }
+  .eyebrow { font-size: var(--fs-s); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; font-weight: 400; }
+  .lead { color: var(--muted); max-width: 560px; }
+  .section-head { margin-bottom: 48px; max-width: 640px; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 15px 32px; border: 1px solid var(--accent); border-radius: 2px;
+    background: var(--accent); color: #fff; text-decoration: none;
+    font: 400 var(--fs-s)/1 var(--sans); letter-spacing: .08em; text-transform: uppercase;
+    cursor: pointer; transition: background .2s, color .2s;
+  }
+  .btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn.ghost { background: transparent; color: var(--accent); }
+  .btn.ghost:hover { background: var(--accent); color: #fff; }
+  .btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+  /* Photo placeholders: shown until a real photo is placed in img/ */
+  .photo { position: relative; background: var(--ph); overflow: hidden; }
+  .photo img { width: 100%; height: 100%; object-fit: cover; }
+  .photo.zoom img { cursor: zoom-in; transition: transform .6s ease; }
+  .photo.zoom:hover img { transform: scale(1.02); }
+  .photo.missing img { display: none; }
+  .photo.missing::after {
+    content: attr(data-label);
+    position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center;
+    font-size: var(--fs-s); letter-spacing: .14em; text-transform: uppercase; color: #9a9da4;
+    border: 1px solid var(--line);
+  }
+
+  /* 1. Header */
+  header.site { padding: 32px 0 0; }
+  header.site .wrap { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .logo { font-family: var(--serif); font-size: clamp(52px, 8vw, 80px); color: var(--text); text-decoration: none; line-height: 1; }
+  .logo span { font-size: clamp(30px, 4vw, 40px); color: var(--muted); margin-left: 12px; }
+  .lang { display: flex; gap: 4px; }
+  .lang button {
+    background: none; border: 0; padding: 6px 8px; cursor: pointer;
+    font: 400 var(--fs-s) var(--sans); letter-spacing: .12em; color: var(--muted);
+  }
+  .lang button[aria-pressed="true"] { color: var(--accent); border-bottom: 1px solid var(--accent); }
+
+  /* 2. Hero */
+  .hero { padding-top: 64px; }
+  .hero .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .hero .photo { aspect-ratio: 4 / 5; }
+  .perks { list-style: none; padding: 0; margin: 40px 0 0; display: grid; gap: 12px; }
+  .perks li { display: flex; gap: 14px; align-items: center; font-size: var(--fs-m); }
+  .perks li::before { content: ""; width: 24px; height: 1px; background: var(--accent); flex: none; }
+
+  /* 3. Interiors */
+  .interiors { display: grid; grid-template-columns: repeat(6, 1fr); gap: 24px; }
+  .interiors figure { margin: 0; grid-column: span 2; }
+  .interiors figure:nth-child(1), .interiors figure:nth-child(2) { grid-column: span 3; }
+  .interiors .photo { aspect-ratio: 4 / 5; }
+  figcaption { font-size: var(--fs-s); color: var(--muted); padding-top: 12px; }
+  figcaption strong { display: block; font-weight: 400; color: var(--text); font-size: var(--fs-m); }
+  figcaption span { display: block; margin-top: 2px; font-style: italic; color: #4a4d54; }
+
+  /* 4. About */
+  .about .wrap { display: grid; grid-template-columns: 5fr 7fr; gap: 72px; align-items: start; }
+  .about .photo { aspect-ratio: 4 / 5; }
+  /* Фон на фото автора яркий — приглушаем до мягкого ч/б */
+  .about .photo img { filter: grayscale(1) contrast(.9) brightness(1.06); }
+  .questions { margin-top: 24px; font-style: italic; color: var(--muted); font-size: var(--fs-m); }
+  .questions p { margin: 0 0 6px; }
+
+  /* 5. Catalog */
+  .catalog { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px 32px; }
+  .card .photo { aspect-ratio: 3 / 4; margin-bottom: 20px; }
+  .card .meta { font-size: var(--fs-s); color: var(--muted); margin: 0 0 4px; }
+  .card .row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; gap: 12px; }
+  .price { font-family: var(--serif); font-size: var(--fs-m); }
+  .status { font-size: var(--fs-s); letter-spacing: .1em; text-transform: uppercase; }
+  .status.in { color: var(--accent); }
+  .status.order { color: var(--muted); }
+  .card .ask { display: inline-block; margin-top: 10px; font-size: var(--fs-s); text-decoration: none; border-bottom: 1px solid currentColor; }
+  .info-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 72px; }
+  .info { background: var(--surface); border: 1px solid var(--line); padding: 36px; }
+  .info p:last-child { margin: 0; }
+  .info p { color: var(--muted); font-size: var(--fs-m); }
+
+  /* 6. Quote */
+  .quote { text-align: center; }
+  .quote blockquote { margin: 0 auto; max-width: 800px; }
+  .quote blockquote p { font-family: var(--serif); font-size: var(--fs-l); line-height: 1.35; margin-bottom: 24px; }
+  .quote cite { font-style: normal; font-family: var(--serif); font-size: var(--fs-m); color: var(--muted); }
+
+  /* 7. CTA */
+  .cta { text-align: center; }
+  .cta .lead { margin: 0 auto 36px; }
+  .cta .buttons, .review .buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  /* 8. Form */
+  .order .wrap { display: grid; grid-template-columns: 5fr 7fr; gap: 72px; }
+  form { background: var(--surface); border: 1px solid var(--line); padding: 40px; display: grid; gap: 20px; }
+  label { display: grid; gap: 6px; font-size: var(--fs-s); letter-spacing: .06em; color: var(--muted); }
+  label .opt { text-transform: none; letter-spacing: 0; font-size: var(--fs-s); }
+  input, select {
+    font: 400 var(--fs-m) var(--sans); color: var(--text);
+    padding: 12px 14px; border: 1px solid var(--line); border-radius: 2px; background: #fff; width: 100%;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .hp { position: absolute; left: -9999px; }
+  .form-note { font-size: var(--fs-s); color: var(--muted); margin: 0; }
+
+  /* 9. Review */
+  .review { text-align: center; padding: 72px 0; }
+  .review .lead { margin: 0 auto 28px; }
+
+  /* 10. Footer */
+  footer { border-top: 1px solid var(--line); padding: 40px 0; font-size: var(--fs-s); color: var(--muted); }
+  footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+  footer nav { display: flex; gap: 24px; }
+  footer a { color: var(--text); text-decoration: none; }
+  footer a:hover { color: var(--accent); }
+  footer .logo { font-size: var(--fs-m); }
+
+  /* Lightbox */
+  dialog.lb { border: 0; padding: 0; background: transparent; max-width: 96vw; max-height: 96vh; }
+  dialog.lb::backdrop { background: rgba(250,250,251,.96); }
+  dialog.lb img { max-width: 92vw; max-height: 84vh; object-fit: contain; margin: 0 auto; box-shadow: 0 20px 60px rgba(0,0,0,.12); }
+  dialog.lb p { text-align: center; color: var(--muted); margin: 16px 0 0; font-size: var(--fs-s); }
+  dialog.lb button { position: fixed; top: 16px; right: 20px; background: none; border: 0; font: 400 var(--fs-l)/1 var(--sans); color: var(--text); cursor: pointer; }
+
+  @media (max-width: 900px) {
+    section { padding: 64px 0; }
+    .hero { padding-top: 40px; }
+    .hero .wrap, .about .wrap, .order .wrap { grid-template-columns: 1fr; gap: 40px; }
+    .interiors, .catalog, .info-cards { grid-template-columns: 1fr; }
+    .interiors figure, .interiors figure:nth-child(1), .interiors figure:nth-child(2) { grid-column: auto; }
+    .catalog { gap: 48px; }
+    .info-cards { margin-top: 56px; }
+  }
+  @media (max-width: 560px) {
+
+    .wrap { padding: 0 16px; }
+    header.site .wrap { flex-direction: column; gap: 12px; }
+    .logo span { margin-left: 6px; }
+    .two { grid-template-columns: 1fr; }
+    form, .info { padding: 24px; }
+    .btn { width: 100%; }
+    footer nav { flex-wrap: wrap; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <svg viewBox="0 0 1280 800" preserveAspectRatio="xMinYMin slice">
+    <defs>
+      <path id="lineA" d="M 140 -40 C 420 180, 720 300, 1340 520"/>
+      <path id="lineB" d="M -60 360 C 220 400, 480 560, 720 860"/>
+    </defs>
+    <g fill="none" stroke="#fff" stroke-linecap="round">
+      <path d="M -40 -20 C 160 220, 240 480, 520 840" stroke-width="90" opacity=".35"/>
+      <path d="M 60 -40 C 300 200, 380 520, 720 860" stroke-width="150" opacity=".22"/>
+      <path d="M 260 -60 C 420 160, 640 300, 1100 420" stroke-width="110" opacity=".2"/>
+      <path d="M -120 400 C 180 430, 440 580, 760 860" stroke-width="70" opacity=".3"/>
+    </g>
+    <g fill="none" stroke="#fff" stroke-width=".8" opacity=".6">
+      <use href="#lineA"/>
+      <use href="#lineA" transform="translate(14 4)"/>
+      <use href="#lineA" transform="translate(28 8)"/>
+      <use href="#lineA" transform="translate(42 12)"/>
+      <use href="#lineA" transform="translate(56 16)"/>
+      <use href="#lineA" transform="translate(70 20)"/>
+      <use href="#lineA" transform="translate(84 24)"/>
+      <use href="#lineA" transform="translate(98 28)"/>
+      <use href="#lineA" transform="translate(112 32)"/>
+      <use href="#lineA" transform="translate(126 36)"/>
+      <use href="#lineA" transform="translate(140 40)"/>
+      <use href="#lineA" transform="translate(154 44)"/>
+      <use href="#lineB"/>
+      <use href="#lineB" transform="translate(10 -8)"/>
+      <use href="#lineB" transform="translate(20 -16)"/>
+      <use href="#lineB" transform="translate(30 -24)"/>
+      <use href="#lineB" transform="translate(40 -32)"/>
+      <use href="#lineB" transform="translate(50 -40)"/>
+      <use href="#lineB" transform="translate(60 -48)"/>
+      <use href="#lineB" transform="translate(70 -56)"/>
+    </g>
+  </svg>
+</div>
+
+<!-- 1. Шапка -->
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="#top" id="top">Vadim Lein<span>Art Studio</span></a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="ru">RU</button>
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- 2. Первый экран -->
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow" data-i18n="hero.eyebrow"></div>
+        <h1 data-i18n="hero.title"></h1>
+        <p class="lead" data-i18n="hero.text"></p>
+        <a class="btn" href="#catalog" data-i18n="hero.btn"></a>
+        <ul class="perks">
+          <li data-i18n="hero.perk1"></li>
+          <li data-i18n="hero.perk2"></li>
+          <li data-i18n="hero.perk3"></li>
+        </ul>
+      </div>
+      <div class="photo zoom" data-label="hero"><img src="img/photo_2026-10-07_20-10-27.jpg" alt="" data-i18n-alt="hero.alt"></div>
+    </div>
+  </section>
+
+  <!-- 3. В интерьере -->
+  <section id="interiors">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 data-i18n="int.title"></h2>
+        <p class="lead" data-i18n="int.text"></p>
+      </div>
+      <div class="interiors" id="interiorList"></div>
+    </div>
+  </section>
+
+  <!-- 4. Об авторе -->
+  <section class="about" id="about">
+    <div class="wrap">
+      <div>
+        <div class="photo" data-label="author"><img src="img/photo_2026-10-07_18-21-02.jpg" alt="Vadim Lein" style="object-position:center 30%"></div>
+        <div class="questions">
+          <p data-i18n="about.q1"></p>
+          <p data-i18n="about.q2"></p>
+          <p data-i18n="about.q3"></p>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow" data-i18n="about.eyebrow"></div>
+        <h2 data-i18n="about.title"></h2>
+        <!-- ЧЕРНОВИК: Вадим правит текст о себе -->
+        <p data-i18n="about.p1"></p>
+        <p data-i18n="about.p2"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Каталог -->
+  <section id="catalog">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 data-i18n="cat.title"></h2>
+        <p class="lead" data-i18n="cat.text"></p>
+      </div>
+      <div class="catalog" id="catalogList"></div>
+      <div class="info-cards">
+        <div class="info">
+          <h3 data-i18n="cat.giftTitle"></h3>
+          <p data-i18n="cat.giftText"></p>
+        </div>
+        <div class="info">
+          <h3 data-i18n="cat.designTitle"></h3>
+          <p data-i18n="cat.designText"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Цитата художника (временно вместо отзывов; ЧЕРНОВИК — Вадим правит) -->
+  <section class="quote">
+    <div class="wrap">
+      <blockquote>
+        <p data-i18n="quote.text"></p>
+        <cite>— Vadim Lein</cite>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- 7. Призыв к действию -->
+  <section class="cta" id="contact">
+    <div class="wrap">
+      <h2 data-i18n="cta.title"></h2>
+      <p class="lead" data-i18n="cta.text"></p>
+      <div class="buttons">
+        <a class="btn" id="waCta" href="https://wa.me/79169034525" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.7 11.7 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+          WhatsApp
+        </a>
+        <a class="btn ghost" id="tgCta" href="https://t.me/vadim_lein" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5L20.6 3c.9-.3 1.6.2 1.3 1.3Z"/></svg>
+          Telegram
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Форма заявки -->
+  <section class="order" id="order">
+    <div class="wrap">
+      <div>
+        <h2 data-i18n="form.title"></h2>
+        <p class="lead" data-i18n="form.text"></p>
+      </div>
+      <!-- TODO: после активации FormSubmit заменить почту в action на случайный код -->
+      <form action="https://formsubmit.co/9034525@gmail.com" method="POST">
+        <input type="hidden" name="_subject" value="Новая заявка с сайта Vadim Lein">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="Язык" id="formLang" value="RU">
+        <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <label><span data-i18n="form.name"></span>
+          <input type="text" name="Имя" required autocomplete="name">
+        </label>
+        <label><span data-i18n="form.email"></span>
+          <input type="email" name="email" required autocomplete="email">
+        </label>
+        <label><span data-i18n="form.painting"></span>
+          <select name="Картина" id="paintingSelect" required></select>
+        </label>
+        <div class="two">
+          <label><span>WhatsApp <span class="opt" data-i18n="form.optional"></span></span>
+            <input type="tel" name="WhatsApp" autocomplete="tel">
+          </label>
+          <label><span>Telegram <span class="opt" data-i18n="form.optional"></span></span>
+            <input type="text" name="Telegram" placeholder="@">
+          </label>
+        </div>
+        <button class="btn" type="submit" data-i18n="form.submit"></button>
+        <p class="form-note" data-i18n="form.note"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- 9. Оставить отзыв -->
+  <section class="review">
+    <div class="wrap">
+      <h2 data-i18n="review.title"></h2>
+      <p class="lead" data-i18n="review.text"></p>
+      <div class="buttons">
+        <a class="btn" id="waReview" href="https://wa.me/79169034525" target="_blank" rel="noopener" data-i18n="review.btn"></a>
+        <a class="btn ghost" href="https://t.me/vadim_lein" target="_blank" rel="noopener" data-i18n="review.btnTg"></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- 10. Футер -->
+<footer>
+  <div class="wrap">
+    <div><span class="logo">Vadim Lein</span> · <span data-i18n="footer.city"></span> · © 2026</div>
+    <nav>
+      <a href="https://wa.me/79169034525" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="https://t.me/vadim_lein" target="_blank" rel="noopener">Telegram</a>
+      <!-- TODO: вставить ссылку на Instagram Вадима -->
+      <a href="#" target="_blank" rel="noopener">Instagram</a>
+    </nav>
+  </div>
+</footer>
+
+<dialog class="lb" id="lightbox">
+  <button type="button" aria-label="Close">×</button>
+  <img alt="">
+  <p></p>
+</dialog>
+
+<script>
+const WA = "79169034525";
+const TG = "vadim_lein";
+
+/* Фото в интерьерах. pos — какую часть снимка держать в кадре при обрезке */
+const INTERIORS = [
+  { img: "img/photo_2026-10-07_20-10-11.jpg", pos: "right center",
+    ru: "Прихожая", es: "Recibidor", en: "Entryway",
+    note: { ru: "Первое, что видишь, когда возвращаешься домой", es: "Lo primero que ves al volver a casa", en: "The first thing you see when you come home" } },
+  { img: "img/photo_2026-10-07_20-10-27.jpg", pos: "center",
+    ru: "Гостиная", es: "Living", en: "Living room",
+    note: { ru: "Над диваном, где проходят тихие вечера", es: "Sobre el sofá, donde pasan las tardes tranquilas", en: "Above the sofa, where quiet evenings unfold" } },
+  { img: "img/photo_2026-10-07_20-10-34.jpg", pos: "center 20%",
+    ru: "Уголок для чтения", es: "Rincón de lectura", en: "Reading nook",
+    note: { ru: "Кресло, плед и немного тишины", es: "Un sillón, una manta y un poco de silencio", en: "An armchair, a blanket and a little quiet" } },
+  { img: "img/photo_2026-10-07_20-11-11.jpg", pos: "center 30%",
+    ru: "Кабинет", es: "Estudio", en: "Home office",
+    note: { ru: "Тёплый акцент на тёмной стене", es: "Un acento cálido sobre una pared oscura", en: "A warm accent on a dark wall" } },
+  { img: "img/photo_2026-10-07_20-11-22.jpg", pos: "center 20%",
+    ru: "Классическая гостиная", es: "Living clásico", en: "Classic living room",
+    note: { ru: "Золото и мрамор для вечернего света", es: "Oro y mármol para la luz del atardecer", en: "Gold and marble for evening light" } }
+];
+
+/* ЧЕРНОВИК: сверить с Вадимом названия, размеры, техники и цены */
+const PAINTINGS = [
+  { img: "img/photo_2026-10-07_20-10-47.jpg", size: "60 × 80", price: 175, stock: true,
+    name: { ru: "Морская волна", es: "Ola marina", en: "Sea Wave" } },
+  { img: "img/photo_2026-10-07_20-11-02.jpg", size: "50 × 70", price: 145, stock: true,
+    name: { ru: "Синий ритм", es: "Ritmo azul", en: "Blue Rhythm" } },
+  { img: "img/photo_2026-10-07_20-10-57.jpg", size: "50 × 70", price: 130, stock: true,
+    name: { ru: "Арки", es: "Arcos", en: "Arches" } },
+  { img: "img/photo_2026-10-07_20-11-07.jpg", size: "40 × 50", price: 90, stock: false,
+    name: { ru: "Тёмное золото", es: "Oro oscuro", en: "Dark Gold" } },
+  { img: "img/photo_2026-10-07_20-11-27.jpg", size: "60 × 90", price: 185, stock: false,
+    name: { ru: "Мрамор и золото", es: "Mármol y oro", en: "Marble & Gold" } }
+];
+
+const T = {
+  ru: {
+    "meta.title": "Vadim Lein Art Studio — рельефная живопись, Монтевидео",
+    "hero.eyebrow": "Рельефная живопись · Монтевидео",
+    "hero.title": "Пусть дома станет тише",
+    "hero.text": "Авторские рельефные абстракции для спокойного, светлого интерьера. Каждая картина написана вручную и существует в единственном экземпляре.",
+    "hero.btn": "Выбрать картину",
+    "hero.perk1": "Оригиналы в одном экземпляре",
+    "hero.perk2": "Доставка по Уругваю",
+    "hero.perk3": "Готовы к подарку",
+    "hero.alt": "Рельефная картина Vadim Lein в интерьере",
+    "int.title": "В интерьере",
+    "int.text": "Так картины живут в настоящих комнатах. Нажмите на фото, чтобы рассмотреть его целиком.",
+    "about.eyebrow": "Об авторе",
+    "about.title": "Картины, рядом с которыми хочется выдохнуть",
+    "about.p1": "Я долго искал, что на самом деле делает дом домом. Оказалось — не вещи, а ощущение тишины. Так я пришёл к интерьерной живописи: начал писать картины, которые не спорят с комнатой, а успокаивают её.",
+    "about.p2": "Я работаю с рельефом: структурная паста, мастихин, несколько слоёв краски. Фактура меняется вместе со светом в течение дня, и картина каждый раз выглядит немного по-новому. Каждую работу я пишу сам, от начала до конца, в своей студии в Монтевидео.",
+    "about.q1": "Хочется, чтобы дома было спокойно, даже когда снаружи шумно?",
+    "about.q2": "Пустая стена давно ждёт чего-то особенного?",
+    "about.q3": "Важно, чтобы вещь была сделана руками, а не напечатана тысячами копий?",
+    "cat.title": "Каталог",
+    "cat.text": "Оригиналы с размерами и ценами. Нажмите на картину, чтобы увеличить.",
+    "cat.technique": "Акрил, структурная паста, холст",
+    "cat.in": "В наличии",
+    "cat.order": "Под заказ",
+    "cat.ask": "Оставить заявку",
+    "cat.size": "см",
+    "cat.giftTitle": "Доставка и подарок",
+    "cat.giftText": "Доставляю по всему Уругваю. Каждая картина бережно упакована и подписана автором — её можно дарить сразу, без хлопот.",
+    "cat.designTitle": "Для дизайнеров интерьеров",
+    "cat.designText": "Напишу картину или серию под палитру и размеры вашего проекта. Сроки и условия обсудим в переписке — напишите мне.",
+    "quote.text": "Я не пытаюсь удивить. Мне важно, чтобы человек вернулся домой, посмотрел на стену и почувствовал: здесь можно остановиться.",
+    "cta.title": "Не нашли свою картину?",
+    "cta.text": "Напишите мне — подберу из новых работ или напишу картину под ваш интерьер.",
+    "cta.msg": "Здравствуйте, Вадим! Я с вашего сайта, хочу подобрать картину.",
+    "form.title": "Понравилась картина?",
+    "form.text": "Оставьте контакты — я напишу вам сам, расскажу о картине и доставке.",
+    "form.name": "Имя",
+    "form.email": "Электронная почта",
+    "form.painting": "Картина",
+    "form.choose": "Выберите картину",
+    "form.other": "Другая / хочу обсудить",
+    "form.optional": "— необязательно",
+    "form.submit": "Отправить заявку",
+    "form.note": "Без предоплаты: сначала обсудим детали.",
+    "review.title": "Уже купили картину?",
+    "review.text": "Буду благодарен, если поделитесь впечатлением.",
+    "review.btn": "Оставить отзыв в WhatsApp",
+    "review.btnTg": "Оставить отзыв в Telegram",
+    "review.msg": "Хочу оставить отзыв о картине",
+    "footer.city": "Монтевидео, Уругвай"
+  },
+  es: {
+    "meta.title": "Vadim Lein Art Studio — pintura en relieve, Montevideo",
+    "hero.eyebrow": "Pintura en relieve · Montevideo",
+    "hero.title": "Que tu casa sea más serena",
+    "hero.text": "Abstracciones en relieve de autor para interiores luminosos y tranquilos. Cada cuadro está pintado a mano y es una pieza única.",
+    "hero.btn": "Elegir un cuadro",
+    "hero.perk1": "Originales, piezas únicas",
+    "hero.perk2": "Envío a todo Uruguay",
+    "hero.perk3": "Listos para regalar",
+    "hero.alt": "Cuadro en relieve de Vadim Lein en un interior",
+    "int.title": "En el interior",
+    "int.text": "Así viven los cuadros en espacios reales. Toca una foto para verla completa.",
+    "about.eyebrow": "Sobre el autor",
+    "about.title": "Cuadros que invitan a respirar",
+    "about.p1": "Durante mucho tiempo busqué qué hace que una casa sea un hogar. Descubrí que no son los objetos, sino la sensación de calma. Así llegué a la pintura para interiores: cuadros que no compiten con el espacio, sino que lo serenan.",
+    "about.p2": "Trabajo con relieve: pasta de textura, espátula y varias capas de pintura. La textura cambia con la luz del día y el cuadro se ve un poco distinto cada vez. Pinto cada obra yo mismo, de principio a fin, en mi estudio de Montevideo.",
+    "about.q1": "¿Querés que tu casa sea un lugar tranquilo, aunque afuera haya ruido?",
+    "about.q2": "¿Esa pared vacía hace tiempo que espera algo especial?",
+    "about.q3": "¿Te importa que una pieza esté hecha a mano y no impresa en miles de copias?",
+    "cat.title": "Catálogo",
+    "cat.text": "Originales con medidas y precios. Tocá un cuadro para ampliarlo.",
+    "cat.technique": "Acrílico, pasta de textura, lienzo",
+    "cat.in": "Disponible",
+    "cat.order": "Por encargo",
+    "cat.ask": "Solicitar",
+    "cat.size": "cm",
+    "cat.giftTitle": "Envío y regalo",
+    "cat.giftText": "Envío a todo Uruguay. Cada cuadro va cuidadosamente embalado y firmado por el autor, listo para regalar.",
+    "cat.designTitle": "Para diseñadores de interiores",
+    "cat.designText": "Pinto un cuadro o una serie según la paleta y las medidas de tu proyecto. Plazos y condiciones los conversamos por mensaje.",
+    "quote.text": "No busco sorprender. Quiero que una persona llegue a casa, mire la pared y sienta: acá puedo detenerme.",
+    "cta.title": "¿No encontraste tu cuadro?",
+    "cta.text": "Escribime: te muestro obras nuevas o pinto un cuadro para tu espacio.",
+    "cta.msg": "¡Hola, Vadim! Vengo de tu sitio web, quiero elegir un cuadro.",
+    "form.title": "¿Te gustó un cuadro?",
+    "form.text": "Dejá tus datos y te escribo yo para contarte sobre el cuadro y el envío.",
+    "form.name": "Nombre",
+    "form.email": "Correo electrónico",
+    "form.painting": "Cuadro",
+    "form.choose": "Elegí un cuadro",
+    "form.other": "Otro / quiero consultar",
+    "form.optional": "— opcional",
+    "form.submit": "Enviar solicitud",
+    "form.note": "Sin pago por adelantado: primero conversamos los detalles.",
+    "review.title": "¿Ya tenés un cuadro?",
+    "review.text": "Te agradezco si compartís tu impresión.",
+    "review.btn": "Dejar reseña en WhatsApp",
+    "review.btnTg": "Dejar reseña en Telegram",
+    "review.msg": "Quiero dejar una reseña sobre el cuadro",
+    "footer.city": "Montevideo, Uruguay"
+  },
+  en: {
+    "meta.title": "Vadim Lein Art Studio — relief paintings, Montevideo",
+    "hero.eyebrow": "Relief painting · Montevideo",
+    "hero.title": "Let your home grow quieter",
+    "hero.text": "Original textured abstract paintings for calm, light-filled interiors. Each piece is hand-painted and one of a kind.",
+    "hero.btn": "Choose a painting",
+    "hero.perk1": "One-of-a-kind originals",
+    "hero.perk2": "Delivery across Uruguay",
+    "hero.perk3": "Ready to gift",
+    "hero.alt": "Vadim Lein relief painting in an interior",
+    "int.title": "In the interior",
+    "int.text": "This is how the paintings live in real rooms. Tap a photo to see it in full.",
+    "about.eyebrow": "About the artist",
+    "about.title": "Paintings that let you breathe out",
+    "about.p1": "For a long time I wondered what really makes a house a home. It turned out it isn't things — it's a sense of quiet. That's how I came to interior painting: works that don't compete with a room, but calm it.",
+    "about.p2": "I work in relief: texture paste, palette knife, several layers of paint. The surface changes with the daylight, so the painting looks a little different every time. I paint every piece myself, start to finish, in my studio in Montevideo.",
+    "about.q1": "Want your home to feel calm, even when it's noisy outside?",
+    "about.q2": "Has an empty wall been waiting for something special?",
+    "about.q3": "Does it matter to you that a piece is made by hand, not printed in thousands of copies?",
+    "cat.title": "Catalog",
+    "cat.text": "Originals with sizes and prices. Tap a painting to enlarge.",
+    "cat.technique": "Acrylic, texture paste, canvas",
+    "cat.in": "Available",
+    "cat.order": "Made to order",
+    "cat.ask": "Request",
+    "cat.size": "cm",
+    "cat.giftTitle": "Delivery & gifting",
+    "cat.giftText": "I deliver across Uruguay. Every painting is carefully packed and signed by the artist — ready to give as a gift.",
+    "cat.designTitle": "For interior designers",
+    "cat.designText": "I can paint a piece or a series to match your project's palette and dimensions. Let's discuss timing and terms by message.",
+    "quote.text": "I'm not trying to impress. I want someone to come home, look at the wall and feel: here I can pause.",
+    "cta.title": "Haven't found your painting?",
+    "cta.text": "Message me — I'll show you new works or paint one for your space.",
+    "cta.msg": "Hello Vadim! I found your website and would like to choose a painting.",
+    "form.title": "Like a painting?",
+    "form.text": "Leave your contacts and I'll write to you about the painting and delivery.",
+    "form.name": "Name",
+    "form.email": "Email",
+    "form.painting": "Painting",
+    "form.choose": "Choose a painting",
+    "form.other": "Another one / let's discuss",
+    "form.optional": "— optional",
+    "form.submit": "Send request",
+    "form.note": "No prepayment: we'll discuss the details first.",
+    "review.title": "Already bought a painting?",
+    "review.text": "I'd be grateful if you shared your impressions.",
+    "review.btn": "Leave a review on WhatsApp",
+    "review.btnTg": "Leave a review on Telegram",
+    "review.msg": "I'd like to leave a review of the painting",
+    "footer.city": "Montevideo, Uruguay"
+  }
+};
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+let lang = "ru";
+
+function markMissing(img) {
+  const show = () => img.closest(".photo").classList.add("missing");
+  if (img.complete && img.naturalWidth === 0) show();
+  img.addEventListener("error", show);
+}
+
+function photo(src, label, alt, zoom, pos) {
+  const style = pos ? ` style="object-position:${pos}"` : "";
+  return `<div class="photo${zoom ? " zoom" : ""}" data-label="${label}"><img src="${src}" alt="${alt}" loading="lazy"${style}></div>`;
+}
+
+function render() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.title = t["meta.title"];
+  $$("[data-i18n]").forEach(el => el.textContent = t[el.dataset.i18n]);
+  $$("[data-i18n-alt]").forEach(el => el.alt = t[el.dataset.i18nAlt]);
+  $$(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+
+  $("#interiorList").innerHTML = INTERIORS.map(i =>
+    `<figure>${photo(i.img, i.img.split("/")[1], i[lang], true, i.pos)}<figcaption><strong>${i[lang]}</strong><span>${i.note[lang]}</span></figcaption></figure>`
+  ).join("");
+
+  $("#catalogList").innerHTML = PAINTINGS.map((p, n) => `
+    <article class="card">
+      ${photo(p.img, p.img.split("/")[1], p.name[lang], true)}
+      <h3>${p.name[lang]}</h3>
+      <p class="meta">${p.size} ${t["cat.size"]}</p>
+      <p class="meta">${t["cat.technique"]}</p>
+      <div class="row">
+        <span class="status ${p.stock ? "in" : "order"}">${p.stock ? t["cat.in"] : t["cat.order"]}</span>
+        <span class="price">$${p.price}</span>
+      </div>
+      <a class="ask" href="#order" data-pick="${n}">${t["cat.ask"]}</a>
+    </article>`).join("");
+
+  const sel = $("#paintingSelect");
+  const prev = sel.selectedIndex;
+  sel.innerHTML = `<option value="" disabled selected>${t["form.choose"]}</option>` +
+    PAINTINGS.map(p => `<option value="${p.name.ru} — ${p.size} см — $${p.price}">${p.name[lang]} — ${p.size} ${t["cat.size"]} — $${p.price}</option>`).join("") +
+    `<option value="Другая / обсудить">${t["form.other"]}</option>`;
+  if (prev > 0) sel.selectedIndex = prev;
+  $("#formLang").value = lang.toUpperCase();
+
+  const msg = encodeURIComponent(t["cta.msg"]);
+  $("#waCta").href = `https://wa.me/${WA}?text=${msg}`;
+  $("#tgCta").href = `https://t.me/${TG}`;
+  $("#waReview").href = `https://wa.me/${WA}?text=${encodeURIComponent(t["review.msg"])}`;
+
+  $$(".photo img").forEach(markMissing);
+}
+
+function setLang(l) {
+  lang = T[l] ? l : "ru";
+  try { localStorage.setItem("lang", lang); } catch (e) {}
+  render();
+}
+
+$$(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+
+/* Выбор картины в форме по ссылке «Оставить заявку» */
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-pick]");
+  if (a) $("#paintingSelect").selectedIndex = +a.dataset.pick + 1;
+});
+
+/* Лайтбокс */
+const lb = $("#lightbox");
+document.addEventListener("click", e => {
+  const img = e.target.closest(".photo.zoom:not(.missing) img");
+  if (!img) return;
+  $("img", lb).src = img.src;
+  $("p", lb).textContent = img.alt;
+  lb.showModal();
+});
+lb.addEventListener("click", () => lb.close());
+
+let saved = null;
+try { saved = localStorage.getItem("lang"); } catch (e) {}
+if (!saved) {
+  const nav = (navigator.language || "ru").slice(0, 2);
+  saved = nav === "es" ? "es" : nav === "en" ? "en" : "ru";
+}
+setLang(saved);
+</script>
+</body>
+</html>
