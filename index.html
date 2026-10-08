@@ -18,6 +18,7 @@
     --muted: #6b6e75;
     --accent: #1e3a6b;
     --accent-hover: #162c52;
+    --error: #a33a3a;
     --ph: #ecedf0;
     --serif: "Forum", Georgia, serif;
     --sans: "Forum", Georgia, serif;
@@ -100,8 +101,9 @@
   .hero .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
   .hero .photo { aspect-ratio: 4 / 5; }
   .perks { list-style: none; padding: 0; margin: 40px 0 0; display: grid; gap: 12px; }
-  .perks li { display: flex; gap: 14px; align-items: center; font-size: var(--fs-m); }
-  .perks li::before { content: ""; width: 24px; height: 1px; background: var(--accent); flex: none; }
+  .perks li { display: flex; gap: 14px; align-items: flex-start; font-size: var(--fs-m); }
+  /* Чёрточка держится на уровне первой строки, даже если текст переносится */
+  .perks li::before { content: ""; width: 24px; height: 1px; background: var(--accent); flex: none; margin-top: .8em; }
 
   /* 3. Interiors */
   .interiors { display: grid; grid-template-columns: repeat(6, 1fr); gap: 24px; }
@@ -150,13 +152,14 @@
   .order .wrap { display: grid; grid-template-columns: 5fr 7fr; gap: 72px; }
   form { background: var(--surface); border: 1px solid var(--line); padding: 40px; display: grid; gap: 20px; }
   label { display: grid; gap: 6px; font-size: var(--fs-s); letter-spacing: .06em; color: var(--muted); }
-  label .opt { text-transform: none; letter-spacing: 0; font-size: var(--fs-s); }
+  .err { display: none; color: var(--error); letter-spacing: 0; }
+  .err.show { display: block; }
+  input.invalid, select.invalid { border-color: var(--error); }
   input, select {
     font: 400 var(--fs-m) var(--sans); color: var(--text);
     padding: 12px 14px; border: 1px solid var(--line); border-radius: 2px; background: #fff; width: 100%;
   }
   input:focus, select:focus { outline: none; border-color: var(--accent); }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .hp { position: absolute; left: -9999px; }
   .form-note { font-size: var(--fs-s); color: var(--muted); margin: 0; }
 
@@ -192,8 +195,8 @@
 
     .wrap { padding: 0 16px; }
     header.site .wrap { flex-direction: column; gap: 12px; }
-    .logo span { margin-left: 6px; }
-    .two { grid-template-columns: 1fr; }
+    /* На телефоне «Art Studio» — второй строкой под именем */
+    .logo span { display: block; margin: 8px 0 0 2px; }
     form, .info { padding: 24px; }
     .btn { width: 100%; }
     footer nav { flex-wrap: wrap; gap: 16px; }
@@ -359,28 +362,28 @@
         <p class="lead" data-i18n="form.text"></p>
       </div>
       <!-- TODO: после активации FormSubmit заменить почту в action на случайный код -->
-      <form action="https://formsubmit.co/9034525@gmail.com" method="POST">
+      <form id="orderForm" action="https://formsubmit.co/9034525@gmail.com" method="POST" novalidate>
         <input type="hidden" name="_subject" value="Новая заявка с сайта Vadim Lein">
         <input type="hidden" name="_template" value="table">
         <input type="hidden" name="Язык" id="formLang" value="RU">
         <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <!-- Все поля обязательные; проверка и подсказки — в скрипте (validateField) -->
         <label><span data-i18n="form.name"></span>
-          <input type="text" name="Имя" required autocomplete="name">
+          <input type="text" name="Имя" id="fName" required autocomplete="name" aria-describedby="eName">
+          <span class="err" id="eName" aria-live="polite"></span>
         </label>
         <label><span data-i18n="form.email"></span>
-          <input type="email" name="email" required autocomplete="email">
+          <input type="email" name="email" id="fEmail" required autocomplete="email" aria-describedby="eEmail">
+          <span class="err" id="eEmail" aria-live="polite"></span>
+        </label>
+        <label><span data-i18n="form.phone"></span>
+          <input type="tel" name="Телефон" id="fPhone" required autocomplete="tel" inputmode="tel" aria-describedby="ePhone">
+          <span class="err" id="ePhone" aria-live="polite"></span>
         </label>
         <label><span data-i18n="form.painting"></span>
-          <select name="Картина" id="paintingSelect" required></select>
+          <select name="Картина" id="paintingSelect" required aria-describedby="ePainting"></select>
+          <span class="err" id="ePainting" aria-live="polite"></span>
         </label>
-        <div class="two">
-          <label><span>WhatsApp <span class="opt" data-i18n="form.optional"></span></span>
-            <input type="tel" name="WhatsApp" autocomplete="tel">
-          </label>
-          <label><span>Telegram <span class="opt" data-i18n="form.optional"></span></span>
-            <input type="text" name="Telegram" placeholder="@">
-          </label>
-        </div>
         <button class="btn" type="submit" data-i18n="form.submit"></button>
         <p class="form-note" data-i18n="form.note"></p>
       </form>
@@ -498,7 +501,13 @@ const T = {
     "form.painting": "Картина",
     "form.choose": "Выберите картину",
     "form.other": "Другая / хочу обсудить",
-    "form.optional": "— необязательно",
+    "form.phone": "Номер телефона",
+    "err.name": "Укажите, пожалуйста, имя",
+    "err.email": "Укажите электронную почту",
+    "err.emailBad": "Проверьте адрес почты — похоже, в нём опечатка",
+    "err.phone": "Укажите номер телефона",
+    "err.phoneBad": "Проверьте номер — в нём должно быть от 7 до 15 цифр",
+    "err.painting": "Выберите картину из списка",
     "form.submit": "Отправить заявку",
     "form.note": "Без предоплаты: сначала обсудим детали.",
     "review.title": "Уже купили картину?",
@@ -549,7 +558,13 @@ const T = {
     "form.painting": "Cuadro",
     "form.choose": "Elegí un cuadro",
     "form.other": "Otro / quiero consultar",
-    "form.optional": "— opcional",
+    "form.phone": "Número de teléfono",
+    "err.name": "Indicá tu nombre, por favor",
+    "err.email": "Indicá tu correo electrónico",
+    "err.emailBad": "Revisá el correo, parece que tiene un error",
+    "err.phone": "Indicá tu número de teléfono",
+    "err.phoneBad": "Revisá el número: debe tener entre 7 y 15 dígitos",
+    "err.painting": "Elegí un cuadro de la lista",
     "form.submit": "Enviar solicitud",
     "form.note": "Sin pago por adelantado: primero conversamos los detalles.",
     "review.title": "¿Ya tenés un cuadro?",
@@ -600,7 +615,13 @@ const T = {
     "form.painting": "Painting",
     "form.choose": "Choose a painting",
     "form.other": "Another one / let's discuss",
-    "form.optional": "— optional",
+    "form.phone": "Phone number",
+    "err.name": "Please enter your name",
+    "err.email": "Please enter your email",
+    "err.emailBad": "Please check your email — it looks like there's a typo",
+    "err.phone": "Please enter your phone number",
+    "err.phoneBad": "Please check the number — it should have 7 to 15 digits",
+    "err.painting": "Please choose a painting from the list",
     "form.submit": "Send request",
     "form.note": "No prepayment: we'll discuss the details first.",
     "review.title": "Already bought a painting?",
@@ -666,7 +687,51 @@ function render() {
   $("#waReview").href = `https://wa.me/${WA}?text=${encodeURIComponent(t["review.msg"])}`;
 
   $$(".photo img").forEach(markMissing);
+
+  /* Уже показанные подсказки — на новом языке */
+  $$(".err.show").forEach(e => e.textContent = t[e.dataset.key]);
 }
+
+/* Проверка формы: возвращает ключ подсказки или "" если поле заполнено верно */
+const CHECKS = {
+  fName:  el => el.value.trim() ? "" : "err.name",
+  fEmail: el => !el.value.trim() ? "err.email" : el.validity.typeMismatch ? "err.emailBad" : "",
+  fPhone: el => {
+    const v = el.value.trim();
+    if (!v) return "err.phone";
+    const digits = v.replace(/\D/g, "").length;
+    return /^[+\d\s()\-.]+$/.test(v) && digits >= 7 && digits <= 15 ? "" : "err.phoneBad";
+  },
+  paintingSelect: el => el.value ? "" : "err.painting"
+};
+
+function validateField(el) {
+  const key = CHECKS[el.id](el);
+  const err = $("#" + el.getAttribute("aria-describedby"));
+  el.classList.toggle("invalid", !!key);
+  el.setAttribute("aria-invalid", key ? "true" : "false");
+  err.classList.toggle("show", !!key);
+  err.dataset.key = key;
+  err.textContent = key ? T[lang][key] : "";
+  return !key;
+}
+
+const form = $("#orderForm");
+form.addEventListener("submit", e => {
+  const fields = Object.keys(CHECKS).map(id => $("#" + id));
+  const bad = fields.filter(el => !validateField(el));
+  if (bad.length) {
+    e.preventDefault();
+    bad[0].focus();
+  }
+});
+/* Подсказка исчезает, как только поле исправлено */
+Object.keys(CHECKS).forEach(id => {
+  const el = $("#" + id);
+  const recheck = () => { if (el.classList.contains("invalid")) validateField(el); };
+  el.addEventListener("input", recheck);
+  el.addEventListener("change", recheck);
+});
 
 function setLang(l) {
   lang = T[l] ? l : "ru";
@@ -679,7 +744,10 @@ $$(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.data
 /* Выбор картины в форме по ссылке «Оставить заявку» */
 document.addEventListener("click", e => {
   const a = e.target.closest("[data-pick]");
-  if (a) $("#paintingSelect").selectedIndex = +a.dataset.pick + 1;
+  if (!a) return;
+  const sel = $("#paintingSelect");
+  sel.selectedIndex = +a.dataset.pick + 1;
+  if (sel.classList.contains("invalid")) validateField(sel);
 });
 
 /* Лайтбокс */
